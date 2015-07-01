@@ -15,11 +15,14 @@ pred = zeros(1, size(data, 2));
 %  Instructions: Compute pred using theta assuming that the labels start 
 %                from 1.
 
+M = theta * data;
+M = bsxfun(@minus, M, max(M, [], 1));
+expM = exp(M);
 
+p = bsxfun(@rdivide, expM, sum(expM));
 
-
-
-
+[prob, pred] = max(p);
+pred = pred(:);
 
 
 % ---------------------------------------------------------------------
