@@ -70,16 +70,17 @@ theta = initializeParameters(hiddenSize, inputSize);
 %% ----------------- YOUR CODE HERE ----------------------
 %  Find opttheta by running the sparse autoencoder on
 %  unlabeledTrainingImages
-
-opttheta = theta; 
-
-
-
-
+ 
+options.Method = 'lbfgs';
+options.maxIter = maxIter;	   
+options.display = 'on';
 
 
-
-
+[opttheta, cost] = minFunc( @(p) sparseAutoencoderCost(p, ...
+                                   inputSize, hiddenSize, ...
+                                   lambda, sparsityParam, ...
+                                   beta, trainData), ...
+                              theta, options);
 
 %% -----------------------------------------------------
                           
