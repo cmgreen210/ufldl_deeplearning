@@ -14,7 +14,7 @@ b1 = theta(2*hiddenSize*visibleSize+1:2*hiddenSize*visibleSize+hiddenSize);
 %% ---------- YOUR CODE HERE --------------------------------------
 %  Instructions: Compute the activation of the hidden layer for the Sparse Autoencoder.
 z_2 = bsxfun(@plus, W1 * data, b1);
-a_2 = sigmoid(z_2);
+activation = sigmoid(z_2);
 %-------------------------------------------------------------------
 
 end

@@ -73,7 +73,7 @@ theta = initializeParameters(hiddenSize, inputSize);
  
 options.Method = 'lbfgs';
 options.maxIter = maxIter;	   
-options.display = 'on';
+options.display = 'off';
 
 
 [opttheta, cost] = minFunc( @(p) sparseAutoencoderCost(p, ...
@@ -112,14 +112,12 @@ softmaxModel = struct;
 
 % You need to compute softmaxModel using softmaxTrain on trainFeatures and
 % trainLabels
-
-
-
-
-
-
-
-
+addpath ../softmax_exercise
+lambda = 1e-4;
+options.maxIter = 100;
+numClasses = 5;
+softmaxModel = softmaxTrain(hiddenSize, numClasses, lambda, ...
+                            trainFeatures, trainLabels(:), options);
 
 
 %% -----------------------------------------------------
@@ -132,19 +130,7 @@ softmaxModel = struct;
 % Compute Predictions on the test set (testFeatures) using softmaxPredict
 % and softmaxModel
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+[pred] = softmaxPredict(softmaxModel, testFeatures);
 
 %% -----------------------------------------------------
 
