@@ -1,5 +1,7 @@
 %% CS294A/CS294W Self-taught Learning Exercise
-
+addpath ../data
+addpath ../common
+addpath ../common/minFunc
 %  Instructions
 %  ------------
 % 
@@ -31,8 +33,8 @@ maxIter = 400;
 %  change it.
 
 % Load MNIST database files
-mnistData   = loadMNISTImages('mnist/train-images-idx3-ubyte');
-mnistLabels = loadMNISTLabels('mnist/train-labels-idx1-ubyte');
+mnistData   = loadMNISTImages('train-images-idx3-ubyte');
+mnistLabels = loadMNISTLabels('train-labels-idx1-ubyte');
 
 % Set Unlabeled Set (All Images)
 
