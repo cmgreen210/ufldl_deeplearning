@@ -1,5 +1,7 @@
 %% CS294A/CS294W Linear Decoder Exercise
-
+addpath ../common
+addpath ../common/minFunc
+addpath ../data
 %  Instructions
 %  ------------
 % 
@@ -42,28 +44,28 @@ epsilon = 0.1;	       % epsilon for ZCA whitening
 % To speed up gradient checking, we will use a reduced network and some
 % dummy patches
 
-debugHiddenSize = 5;
-debugvisibleSize = 8;
-patches = rand([8 10]);
-theta = initializeParameters(debugHiddenSize, debugvisibleSize); 
+% debugHiddenSize = 5;
+% debugvisibleSize = 8;
+% patches = rand([8 10]);
+% theta = initializeParameters(debugHiddenSize, debugvisibleSize); 
 
-[cost, grad] = sparseAutoencoderLinearCost(theta, debugvisibleSize, debugHiddenSize, ...
-                                           lambda, sparsityParam, beta, ...
-                                           patches);
+% [cost, grad] = sparseAutoencoderLinearCost(theta, debugvisibleSize, debugHiddenSize, ...
+%                                            lambda, sparsityParam, beta, ...
+%                                            patches);
 
-% Check gradients
-numGrad = computeNumericalGradient( @(x) sparseAutoencoderLinearCost(x, debugvisibleSize, debugHiddenSize, ...
-                                                  lambda, sparsityParam, beta, ...
-                                                  patches), theta);
+% % Check gradients
+% numGrad = computeNumericalGradient( @(x) sparseAutoencoderLinearCost(x, debugvisibleSize, debugHiddenSize, ...
+%                                                   lambda, sparsityParam, beta, ...
+%                                                   patches), theta);
 
-% Use this to visually compare the gradients side by side
-disp([numGrad grad]); 
+% % Use this to visually compare the gradients side by side
+% disp([numGrad grad]); 
 
-diff = norm(numGrad-grad)/norm(numGrad+grad);
-% Should be small. In our implementation, these values are usually less than 1e-9.
-disp(diff); 
+% diff = norm(numGrad-grad)/norm(numGrad+grad);
+% % Should be small. In our implementation, these values are usually less than 1e-9.
+% disp(diff); 
 
-assert(diff < 1e-9, 'Difference too large. Check your gradient computation again');
+% assert(diff < 1e-9, 'Difference too large. Check your gradient computation again');
 
 % NOTE: Once your gradients check out, you should run step 0 again to
 %       reinitialize the parameters
@@ -112,7 +114,7 @@ displayColorNetwork(patches(:, 1:100));
 theta = initializeParameters(hiddenSize, visibleSize);
 
 % Use minFunc to minimize the function
-addpath minFunc/
+
 
 options = struct;
 options.Method = 'lbfgs'; 
