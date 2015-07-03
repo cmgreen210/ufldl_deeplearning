@@ -61,17 +61,19 @@ groundTruth = full(sparse(labels, 1:M, 1));
 %                match exactly that of the size of the matrices in stack.
 %
 
+n = numel(stack);
+z = cell(n + 1, 1);
+a = cell(n + 1, 1);
+a{1} = data;
+for l = 1:n
+	z{l+1} = bsxfun(@plus, stack{l}.w * a{l}, stack{l}.b);
+	a{l+1} = sigmoid(z{l+1});
+end
 
-
-
-
-
-
-
-
-
-
-
+A = softmaxTheta * a{n+1};
+A = bsxfun(@minus, A, max(A, [], 1));
+expA = exp(A);
+p = bsxfun(@rdivide, expA, sum(expA));
 
 
 
