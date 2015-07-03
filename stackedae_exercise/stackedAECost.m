@@ -88,7 +88,7 @@ delta = cell(n + 1, 1);
 delta{n + 1} = -1 * (softmaxTheta' * (groundTruth - p)) .* a{n+1} .* (1 - a{n+1});
 
 for l = n:-1:2
-	delta{l} = (stack{l}.w' * delta{l+1}) .* z{l} .* (1 - z{l});
+	delta{l} = (stack{l}.w' * delta{l+1}) .* a{l} .* (1 - a{l});
 end
 
 for l = 1:n
