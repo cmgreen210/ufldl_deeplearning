@@ -24,6 +24,8 @@ addpath ../softmax_exercise
 %  allow your sparse autoencoder to get good filters; you do not need to 
 %  change the parameters below.
 
+DEBUG = true;
+
 inputSize = 28 * 28;
 numClasses = 10;
 hiddenSizeL1 = 200;    % Layer 1 Hidden Size
@@ -32,8 +34,12 @@ sparsityParam = 0.1;   % desired average activation of the hidden units.
                        % (This was denoted by the Greek alphabet rho, which looks like a lower-case "p",
 		               %  in the lecture notes). 
 lambda = 3e-3;         % weight decay parameter       
-beta = 3;              % weight of sparsity penalty term       
+beta = 3;              % weight of sparsity penalty term 
+
 maxIter = 400;
+if DEBUG
+	maxIter = 2;
+end
 
 %%======================================================================
 %% STEP 1: Load data from the MNIST database
@@ -68,7 +74,7 @@ options.display = 'off';
 
 
 [sae1OptTheta, cost] = minFunc( @(p) sparseAutoencoderCost(p, ...
-                                   inputSize, hiddenSize1, ...
+                                   inputSize, hiddenSizeL1, ...
                                    lambda, sparsityParam, ...
                                    beta, trainData), ...
                               	   sae1Theta, options);
@@ -103,7 +109,7 @@ options.display = 'off';
 
 
 [sae2OptTheta, cost] = minFunc( @(p) sparseAutoencoderCost(p, ...
-                                   hiddenSize1, hiddenSize2, ...
+                                   hiddenSizeL1, hiddenSizeL2, ...
                                    lambda, sparsityParam, ...
                                    beta, sae1Features), ...
                               	   sae2Theta, options);
@@ -195,8 +201,8 @@ stackedAETheta = [ saeSoftmaxOptTheta ; stackparams ];
 
 % Get labelled test images
 % Note that we apply the same kind of preprocessing as the training set
-testData = loadMNISTImages('mnist/t10k-images-idx3-ubyte');
-testLabels = loadMNISTLabels('mnist/t10k-labels-idx1-ubyte');
+testData = loadMNISTImages('t10k-images-idx3-ubyte');
+testLabels = loadMNISTLabels('t10k-labels-idx1-ubyte');
 
 testLabels(testLabels == 0) = 10; % Remap 0 to 10
 
