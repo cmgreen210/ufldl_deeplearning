@@ -69,7 +69,7 @@ delta_3 = -1 * data_diff .* a_3 .* (1 - a_3);
 W2grad = m_inv * delta_3 * a_2' + lambda .* W2;
 b2grad = m_inv * sum(delta_3, 2);
 
-delta_2 = (W2' * delta_3 + beta .* (-1* rho./rho_hat + (1-rho)./(1-rho_hat))) .* a_2 .* (1 - a_2);
+delta_2 = bsxfun(@plus, W2' * delta_3, beta .* (-1* rho./rho_hat + (1-rho)./(1-rho_hat))) .* a_2 .* (1 - a_2);
 W1grad = m_inv * delta_2 * data' + lambda .* W1;
 b1grad = m_inv * sum(delta_2, 2);
 
