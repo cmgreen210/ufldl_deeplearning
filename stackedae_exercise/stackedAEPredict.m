@@ -28,7 +28,7 @@ stack = params2stack(theta(hiddenSize*numClasses+1:end), netconfig);
 %                from 1.
 n = numel(stack);
 a = data;
-z = null;
+z = zeros(size(a));
 for l = 1:n
 	z = bsxfun(@plus, stack{l}.w * a, stack{l}.b);
 	a = sigmoid(z);

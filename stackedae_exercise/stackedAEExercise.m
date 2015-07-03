@@ -24,7 +24,7 @@ addpath ../softmax_exercise
 %  allow your sparse autoencoder to get good filters; you do not need to 
 %  change the parameters below.
 
-DEBUG = true;
+DEBUG = false;
 
 inputSize = 28 * 28;
 numClasses = 10;
@@ -141,7 +141,9 @@ saeSoftmaxTheta = 0.005 * randn(hiddenSizeL2 * numClasses, 1);
 %        set saeSoftmaxOptTheta = softmaxModel.optTheta(:);
 
 lambda = 1e-4;
-options.maxIter = 100;
+if ~DEBUG
+  options.maxIter = 100;
+end;
 numClasses = numel(unique(trainLabels));
 softmaxModel = softmaxTrain(hiddenSizeL2, numClasses, lambda, ...
 						   sae2Features, trainLabels(:), options);
@@ -173,21 +175,16 @@ stackedAETheta = [ saeSoftmaxOptTheta ; stackparams ];
 %
 %
 
+options.Method = 'lbfgs';
+options.maxIter = maxIter;     
+options.display = 'off';
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+[stackedAEOptTheta, cost] = minFunc( @(p) stackedAECost(p, ...
+                                   inputSize, hiddenSizeL2, ...
+                                   numClasses, netconfig, ...
+                                   lambda, trainData, trainLabels'), ...
+                                   stackedAETheta, options);
 
 % -------------------------------------------------------------------------
 
