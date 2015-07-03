@@ -1,5 +1,11 @@
 %% CS294A/CS294W Stacked Autoencoder Exercise
 
+addpath ../data
+addpath ../common
+addpath ../common/minFunc
+addpath ../stl_exercise
+addpath ../softmax_exercise
+
 %  Instructions
 %  ------------
 % 
@@ -27,6 +33,7 @@ sparsityParam = 0.1;   % desired average activation of the hidden units.
 		               %  in the lecture notes). 
 lambda = 3e-3;         % weight decay parameter       
 beta = 3;              % weight of sparsity penalty term       
+maxIter = 400;
 
 %%======================================================================
 %% STEP 1: Load data from the MNIST database
@@ -34,8 +41,8 @@ beta = 3;              % weight of sparsity penalty term
 %  This loads our training data from the MNIST database files.
 
 % Load MNIST database files
-trainData = loadMNISTImages('mnist/train-images-idx3-ubyte');
-trainLabels = loadMNISTLabels('mnist/train-labels-idx1-ubyte');
+trainData = loadMNISTImages('train-images-idx3-ubyte');
+trainLabels = loadMNISTLabels('train-labels-idx1-ubyte');
 
 trainLabels(trainLabels == 0) = 10; % Remap 0 to 10 since our labels need to start from 1
 
@@ -55,20 +62,16 @@ sae1Theta = initializeParameters(hiddenSizeL1, inputSize);
 %                an hidden size of "hiddenSizeL1"
 %                You should store the optimal parameters in sae1OptTheta
 
+options.Method = 'lbfgs';
+options.maxIter = maxIter;	   
+options.display = 'off';
 
 
-
-
-
-
-
-
-
-
-
-
-
-
+[sae1OptTheta, cost] = minFunc( @(p) sparseAutoencoderCost(p, ...
+                                   inputSize, hiddenSize1, ...
+                                   lambda, sparsityParam, ...
+                                   beta, trainData), ...
+                              	   sae1Theta, options);
 % -------------------------------------------------------------------------
 
 
@@ -94,16 +97,16 @@ sae2Theta = initializeParameters(hiddenSizeL2, hiddenSizeL1);
 %                You should store the optimal parameters in sae2OptTheta
 
 
+options.Method = 'lbfgs';
+options.maxIter = maxIter;	   
+options.display = 'off';
 
 
-
-
-
-
-
-
-
-
+[sae2OptTheta, cost] = minFunc( @(p) sparseAutoencoderCost(p, ...
+                                   hiddenSize1, hiddenSize2, ...
+                                   lambda, sparsityParam, ...
+                                   beta, sae1Features), ...
+                              	   sae2Theta, options);
 
 % -------------------------------------------------------------------------
 
@@ -131,19 +134,12 @@ saeSoftmaxTheta = 0.005 * randn(hiddenSizeL2 * numClasses, 1);
 %  NOTE: If you used softmaxTrain to complete this part of the exercise,
 %        set saeSoftmaxOptTheta = softmaxModel.optTheta(:);
 
-
-
-
-
-
-
-
-
-
-
-% -------------------------------------------------------------------------
-
-
+lambda = 1e-4;
+options.maxIter = 100;
+numClasses = numel(unique(trainLabels));
+softmaxModel = softmaxTrain(hiddenSizeL2, numClasses, lambda, ...
+						   sae2Features, trainLabels(:), options);
+saeSoftmaxOptTheta = softmaxModel.optTheta(:);
 
 %%======================================================================
 %% STEP 5: Finetune softmax model
