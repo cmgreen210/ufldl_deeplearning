@@ -75,9 +75,27 @@ A = bsxfun(@minus, A, max(A, [], 1));
 expA = exp(A);
 p = bsxfun(@rdivide, expA, sum(expA));
 
+log_p = log(p)';
+I = sub2ind(size(log_p), 1:size(log_p, 1), labels);
+vals = log_p(I);
+thetaSq = softmaxTheta .* softmaxTheta;
+reg = lambda / 2 * sum(thetaSq(:));
 
+cost = -1 / M * sum(vals) + reg;
+softmaxThetaGrad = -1 / M * (groundTruth - p) * a{n+1}' + lambda * softmaxTheta;
 
-% -------------------------------------------------------------------------
+delta = cell(n + 1, 1);
+delta{n + 1} = -1 * (softmaxTheta' * (groundTruth - p)) .* a{n+1} .* (1 - a{n+1});
+
+for l = n:-1:2
+	delta{l} = (stack{l}.w' * delta{l+1}) .* z{l} .* (1 - z{l});
+end
+
+for l = 1:n
+	stackgrad{l}.w = delta{l + 1} * a{l}' / M;
+	stackgrad{l}.b = sum(delta{l + 1}, 2) / M;
+end
+
 
 %% Roll gradient vector
 grad = [softmaxThetaGrad(:) ; stack2params(stackgrad)];
