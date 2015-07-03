@@ -1,4 +1,5 @@
-function [pred] = stackedAEPredict(theta, inputSize, hiddenSize, numClasses, netconfig, data)
+function [pred] = stackedAEPredict(theta, inputSize, hiddenSize,...
+									 numClasses, netconfig, data)
                                          
 % stackedAEPredict: Takes a trained theta and a test data set,
 % and returns the predicted labels for each example.
@@ -7,7 +8,8 @@ function [pred] = stackedAEPredict(theta, inputSize, hiddenSize, numClasses, net
 % visibleSize: the number of input units
 % hiddenSize:  the number of hidden units *at the 2nd layer*
 % numClasses:  the number of categories
-% data: Our matrix containing the training data as columns.  So, data(:,i) is the i-th training example. 
+% data: Our matrix containing the training data as columns.  
+%		So, data(:,i) is the i-th training example. 
 
 % Your code should produce the prediction matrix 
 % pred, where pred(i) is argmax_c P(y(c) | x(i)).
@@ -15,7 +17,8 @@ function [pred] = stackedAEPredict(theta, inputSize, hiddenSize, numClasses, net
 %% Unroll theta parameter
 
 % We first extract the part which compute the softmax gradient
-softmaxTheta = reshape(theta(1:hiddenSize*numClasses), numClasses, hiddenSize);
+softmaxTheta = reshape(theta(1:hiddenSize*numClasses),...
+						 numClasses, hiddenSize);
 
 % Extract out the "stack"
 stack = params2stack(theta(hiddenSize*numClasses+1:end), netconfig);
@@ -23,16 +26,22 @@ stack = params2stack(theta(hiddenSize*numClasses+1:end), netconfig);
 %% ---------- YOUR CODE HERE --------------------------------------
 %  Instructions: Compute pred using theta assuming that the labels start 
 %                from 1.
+n = numel(stack);
+a = data;
+z = null;
+for l = 1:n
+	z = bsxfun(@plus, stack{l}.w * a, stack{l}.b);
+	a = sigmoid(z);
+end
 
+M = softmaxTheta * a;
+M = bsxfun(@minus, M, max(M, [], 1));
+expM = exp(M);
 
+p = bsxfun(@rdivide, expM, sum(expM));
 
-
-
-
-
-
-
-
+[prob, pred] = max(p);
+pred = pred(:);
 
 % -----------------------------------------------------------
 
