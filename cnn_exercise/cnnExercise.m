@@ -1,5 +1,10 @@
 %% CS294A/CS294W Convolutional Neural Networks Exercise
 
+addpath ../linear_decoder_exercise
+addpath ../data
+addpath ../data/stlSubset
+addpath ../stl_exercise
+addpath ../softmax_exercise
 %  Instructions
 %  ------------
 % 
@@ -38,10 +43,11 @@ poolDim = 19;          % dimension of pooling region
 % Train the sparse autoencoder and fill the following variables with 
 % the optimal parameters:
 
-optTheta =  zeros(2*hiddenSize*visibleSize+hiddenSize+visibleSize, 1);
-ZCAWhite =  zeros(visibleSize, visibleSize);
-meanPatch = zeros(visibleSize, 1);
+% optTheta =  zeros(2*hiddenSize*visibleSize+hiddenSize+visibleSize, 1);
+% ZCAWhite =  zeros(visibleSize, visibleSize);
+% meanPatch = zeros(visibleSize, 1);
 
+load STL10Features.mat
 
 % --------------------------------------------------------------------
 
@@ -143,50 +149,58 @@ end
 %  Because the convolved features matrix is very large, we will do the
 %  convolution and pooling 50 features at a time to avoid running out of
 %  memory. Reduce this number if necessary
+loadFromMemory = false;
+if ~loadFromMemory
+    stepSize = 50;
+    assert(mod(hiddenSize, stepSize) == 0, 'stepSize should divide hiddenSize');
 
-stepSize = 50;
-assert(mod(hiddenSize, stepSize) == 0, 'stepSize should divide hiddenSize');
+    load stlTrainSubset.mat % loads numTrainImages, trainImages, trainLabels
+    load stlTestSubset.mat  % loads numTestImages,  testImages,  testLabels
 
-load stlTrainSubset.mat % loads numTrainImages, trainImages, trainLabels
-load stlTestSubset.mat  % loads numTestImages,  testImages,  testLabels
+    pooledFeaturesTrain = zeros(hiddenSize, numTrainImages, ...
+        floor((imageDim - patchDim + 1) / poolDim), ...
+        floor((imageDim - patchDim + 1) / poolDim) );
+    pooledFeaturesTest = zeros(hiddenSize, numTestImages, ...
+        floor((imageDim - patchDim + 1) / poolDim), ...
+        floor((imageDim - patchDim + 1) / poolDim) );
 
-pooledFeaturesTrain = zeros(hiddenSize, numTrainImages, ...
-    floor((imageDim - patchDim + 1) / poolDim), ...
-    floor((imageDim - patchDim + 1) / poolDim) );
-pooledFeaturesTest = zeros(hiddenSize, numTestImages, ...
-    floor((imageDim - patchDim + 1) / poolDim), ...
-    floor((imageDim - patchDim + 1) / poolDim) );
+    tic();
 
-tic();
+    for convPart = 1:(hiddenSize / stepSize)
+        
+        featureStart = (convPart - 1) * stepSize + 1;
+        featureEnd = convPart * stepSize;
+        
+        fprintf('Step %d: features %d to %d\n', convPart, featureStart, featureEnd);  
+        fflush(stdout);
+        Wt = W(featureStart:featureEnd, :);
+        bt = b(featureStart:featureEnd);    
+        
+        fprintf('Convolving and pooling train images\n');
+        fflush(stdout);
+        convolvedFeaturesThis = cnnConvolve(patchDim, stepSize, ...
+            trainImages, Wt, bt, ZCAWhite, meanPatch);
+        pooledFeaturesThis = cnnPool(poolDim, convolvedFeaturesThis);
+        pooledFeaturesTrain(featureStart:featureEnd, :, :, :) = pooledFeaturesThis;   
+        toc();
+        clear convolvedFeaturesThis pooledFeaturesThis;
+        
+        fprintf('Convolving and pooling test images\n');
+        fflush(stdout);
+        convolvedFeaturesThis = cnnConvolve(patchDim, stepSize, ...
+            testImages, Wt, bt, ZCAWhite, meanPatch);
+        pooledFeaturesThis = cnnPool(poolDim, convolvedFeaturesThis);
+        pooledFeaturesTest(featureStart:featureEnd, :, :, :) = pooledFeaturesThis;   
+        toc();
 
-for convPart = 1:(hiddenSize / stepSize)
-    
-    featureStart = (convPart - 1) * stepSize + 1;
-    featureEnd = convPart * stepSize;
-    
-    fprintf('Step %d: features %d to %d\n', convPart, featureStart, featureEnd);  
-    Wt = W(featureStart:featureEnd, :);
-    bt = b(featureStart:featureEnd);    
-    
-    fprintf('Convolving and pooling train images\n');
-    convolvedFeaturesThis = cnnConvolve(patchDim, stepSize, ...
-        trainImages, Wt, bt, ZCAWhite, meanPatch);
-    pooledFeaturesThis = cnnPool(poolDim, convolvedFeaturesThis);
-    pooledFeaturesTrain(featureStart:featureEnd, :, :, :) = pooledFeaturesThis;   
-    toc();
-    clear convolvedFeaturesThis pooledFeaturesThis;
-    
-    fprintf('Convolving and pooling test images\n');
-    convolvedFeaturesThis = cnnConvolve(patchDim, stepSize, ...
-        testImages, Wt, bt, ZCAWhite, meanPatch);
-    pooledFeaturesThis = cnnPool(poolDim, convolvedFeaturesThis);
-    pooledFeaturesTest(featureStart:featureEnd, :, :, :) = pooledFeaturesThis;   
-    toc();
+        clear convolvedFeaturesThis pooledFeaturesThis;
 
-    clear convolvedFeaturesThis pooledFeaturesThis;
-
+    end
+else
+    load cnnPooledFeatures.mat
+    load pooledFeaturesTrain.mat
+    load pooledFeaturesTest.mat
 end
-
 
 % You might want to save the pooled features since convolution and pooling takes a long time
 save('cnnPooledFeatures.mat', 'pooledFeaturesTrain', 'pooledFeaturesTest');

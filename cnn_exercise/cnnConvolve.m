@@ -17,37 +17,16 @@ function convolvedFeatures = cnnConvolve(patchDim, numFeatures, images, W, b, ZC
 
 numImages = size(images, 4);
 imageDim = size(images, 1);
-imageChannels = size(images, 3);
+numChannels = 3
+imageChannels = size(images, numChannels);
 
 convolvedFeatures = zeros(numFeatures, numImages, imageDim - patchDim + 1, imageDim - patchDim + 1);
 
-% Instructions:
-%   Convolve every feature with every large image here to produce the 
-%   numFeatures x numImages x (imageDim - patchDim + 1) x (imageDim - patchDim + 1) 
-%   matrix convolvedFeatures, such that 
-%   convolvedFeatures(featureNum, imageNum, imageRow, imageCol) is the
-%   value of the convolved featureNum feature for the imageNum image over
-%   the region (imageRow, imageCol) to (imageRow + patchDim - 1, imageCol + patchDim - 1)
-%
-% Expected running times: 
-%   Convolving with 100 images should take less than 3 minutes 
-%   Convolving with 5000 images should take around an hour
-%   (So to save time when testing, you should convolve with less images, as
-%   described earlier)
+patchDimSqrd = patchDim * patchDim;
 
-% -------------------- YOUR CODE HERE --------------------
-% Precompute the matrices that will be used during the convolution. Recall
-% that you need to take into account the whitening and mean subtraction
-% steps
+WProc = W * ZCAWhite;
+bProc = b - WProc * meanPatch;
 
-
-
-
-
-
-% --------------------------------------------------------
-
-convolvedFeatures = zeros(numFeatures, numImages, imageDim - patchDim + 1, imageDim - patchDim + 1);
 for imageNum = 1:numImages
   for featureNum = 1:numFeatures
 
@@ -57,12 +36,8 @@ for imageNum = 1:numImages
 
       % Obtain the feature (patchDim x patchDim) needed during the convolution
       % ---- YOUR CODE HERE ----
-      feature = zeros(8,8); % You should replace this
-      
-      
-      
-      
-      % ------------------------
+      feature = WProc(featureNum, (1 + (channel - 1) * patchDimSqrd) : (channel * patchDimSqrd));
+      feature = reshape(feature, patchDim, patchDim);
 
       % Flip the feature matrix because of the definition of convolution, as explained later
       feature = flipud(fliplr(squeeze(feature)));
@@ -74,10 +49,7 @@ for imageNum = 1:numImages
       % be sure to do a 'valid' convolution
       % ---- YOUR CODE HERE ----
 
-      
-      
-      
-      % ------------------------
+      convolvedImage = convolvedImage + conv2(im, feature, shape='valid');
 
     end
     
@@ -85,9 +57,7 @@ for imageNum = 1:numImages
     % Then, apply the sigmoid function to get the hidden activation
     % ---- YOUR CODE HERE ----
 
-    
-    
-    
+    convolvedImage = sigmoid(convolvedImage + bProc(featureNum));
     % ------------------------
     
     % The convolved feature is the sum of the convolved values for all channels
@@ -96,5 +66,9 @@ for imageNum = 1:numImages
 end
 
 
+end
+
+function out = sigmoid(x)
+  out = 1 ./ (1 + exp(-x));
 end
 
